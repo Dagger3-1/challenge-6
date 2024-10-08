@@ -1,24 +1,83 @@
-document.getElementById('weatherForm').addEventListener('submit', function (event) {
-    event.preventDefault();
-    const city  = document.getElementById('city').value;
-    const appId = 'a69dc26bdec33592724f4ead3ca7b088';
-    const url = 'https://api.openweathermap.org/data/2.5/weather?q={city name}&appid={API key}';
+const searchFormEl=document.querySelector("#search-form");
+const cityNameEl=document.querySelector("#city-name");
+const currentWeatherEl=document.querySelector("#current-weather");
+const fiveDayEl=document.querySelector("#five-day");
+const apiKey='43307f36c133c1b4d80feb3644b2ab3e';
+//TODO: create global array to save city from the input textbox.
+// you have get from localstorage first if it exists otherwise default it to []
+//example:  const cityArr=  JSON.parse(localStorage.getItem("cities")) || []
 
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            if (data.cod === 200) {
-                const weatherResult = `
-                    <h2>Weather in ${data.name}</h2>
-                    <p>Temperature: ${data.main.temp}°C</p>
-                    <p>Description: ${data.weather[0].description}</p>`;
-                document.getElementById('weatherResult').innerHTML = weatherResult;
-            } else {
-                document.getElementById('weatherResult').innerHTML = '<p>City not found!</p>';
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching weather data:', error);
-            document.getElementById('weatherResult').innerHTML = '<p>Error fetching weather data.</p>';
-        });
-});
+function searchCity(event){
+   event.preventDefault();
+   const cityName=cityNameEl.value;
+   populateCurrentWeather(cityName);
+   populdate5Day(cityName);
+   
+}
+
+function populateCurrentWeather(cityName){
+  const url=`https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${apiKey}&units=imperial`;
+
+  fetch(url)
+  .then(function(response){
+    return response.json();
+  })
+  .then(function(data){
+
+    //TODO: push  data.name (city name) into an array and save that array into localstorage using JSON.stringfy
+    //reference week 4 - activity 26
+
+    currentWeatherEl.innerHTML=`<h3>${data.name} ( ${dayjs.unix(data.dt).format("MM/DD/YYYY") } ) <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png" alt="">
+                            </h3>
+                            <p> Temp: <span>${data.main.temp} °F</span> </p>
+                            <p> Wind: <span>12 MPH</span> </p>
+                            <p> Humidity: <span>47 %</span> </p>`;
+
+           // TODO: change static wind and humidity off of the data api               
+
+
+
+    console.log(data)
+
+  })
+}
+
+function populdate5Day(cityName){
+   const url=`https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&appid=${apiKey}&units=imperial`;
+
+   fetch(url)
+   .then(function(response){
+      return response.json();
+   })
+   .then(function(data){
+      console.log(data);
+
+      fiveDayEl.textContent="";
+
+      for(let i=3; i< data.list.length; i=i+8){
+          const forecast=data.list[i]
+         console.log(forecast)
+         fiveDayEl.innerHTML +=`  <div class="col-sm-2 mb-3 mb-sm-0">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">${dayjs.unix(forecast.dt).format("MM/DD/YYYY")  }</h5>
+                            <img src="https://openweathermap.org/img/wn/${forecast.weather[0].icon}@2x.png" alt="">
+                            <p> Temp: <span>71 °F</span> </p>
+                            <p> Wind: <span>12 MPH</span> </p>
+                            <p> Humidity: <span>47 %</span> </p>
+                        </div>
+                    </div>
+                </div>`
+
+      }
+
+      // TODO: populate temp, wind and humidity from forecast api
+   })
+}
+
+
+searchFormEl.addEventListener("submit", searchCity);
+
+//TODO: get latest city from localstorage to replace default value ex chicago
+populateCurrentWeather('Chicago');
+populdate5Day('Chicago')
