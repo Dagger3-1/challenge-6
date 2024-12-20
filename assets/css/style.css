@@ -1,0 +1,7 @@
+.city-thumb {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+    margin-right: 8px;
+    border-radius: 4px;
+}
